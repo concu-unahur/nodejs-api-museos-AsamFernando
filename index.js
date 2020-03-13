@@ -8,33 +8,77 @@ function imprimirMuseos(error, respuesta) {
 
   const cantidad = respuesta.body.count;
   const museos = respuesta.body.results;
-  const direccion = respuesta.body.direccion;
-  const telefono = respuesta.body.comunicarse;
 
   console.log(`Se encontraron ${cantidad} museos.`);
   console.log(`El primer museo se llama ${museos[0].nombre}.`)
 
 }
 
-console.log('Antes de llamar a superagent')
+//console.log('Antes de llamar a superagent')
 
-superagent
-  .get('https://www.cultura.gob.ar/api/v2.0/museos')
-  .query({ format: 'json' })
-  .end(escribirArchivo)
+function traerMuseosAPI(direccion) {
+  superagent
+    .get(direccion)
+    .query({ format: 'json' })
+    .end(escribirArchivoMuseos)
+  }
 
-console.log('Después de llamar a superagent')
-
-function escribirArchivo(error, respuesta) {
-
-  const museos = respuesta.body.results;
-
-  museos.forEach(museo => {
-    fs.writeFile('museos.txt', `${museo.nombre}. Por cualquier consulta comunicarse al ${museo.telefono}`, despuesDeEescribir)
-  });
+function traerOrgAPI(direccion) {
+  superagent
+    .get(direccion)
+    .query({ format: 'json' })
+    .end(escribirArchivoOrganismo)//  
 }
 
-function despuesDeEescribir(error) {
+//console.log('Después de llamar a superagent')
+
+traerMuseosAPI('https://www.cultura.gob.ar/api/v2.0/museos')
+traerOrgAPI('https://www.cultura.gob.ar/api/v2.0/organismos')
+
+
+
+
+function escribirArchivoMuseos(error, respuesta) {
+  var stringMuseos = '';
+  const museos = respuesta.body.results;
+
+  if(error) {
+    throw error
+  }
+  museos.forEach(museo => {
+    stringMuseos += `${museo.nombre}. Por cualquier consulta comunicarse al ${museo.telefono}\n`
+  });
+
+  fs.writeFile('museos.txt', stringMuseos, despuesDeEescribirMuseos);
+}
+
+function escribirArchivoOrganismo(error, respuesta) {
+  var stringOrg = '';
+  const organismos = respuesta.body.results;
+
+  if(error) {
+    throw error
+  }
+  organismos.forEach(org => {
+    stringOrg += `Organismo: ${org.nombre}. Por cualquier consulta comunicarse al ${org.telefono}\n`
+  });
+
+  fs.writeFile('organismos.txt', stringOrg, despuesDeEescribirOrgs);
+
+}
+
+function museosYOrgs() {
+  
+}
+
+
+function despuesDeEescribirMuseos(error) {
+  if (error) {
+    throw new Error('no se pudo escribir', error);
+  }
+  console.log('archivo escrito')
+}
+function despuesDeEescribirOrgs(error) {
   if (error) {
     throw new Error('no se pudo escribir', error);
   }
